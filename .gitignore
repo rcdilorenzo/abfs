@@ -1,0 +1,4 @@
+# Python build fragments
+.ipynb_checkpoints
+__pycache__
+.pytest_cache/
