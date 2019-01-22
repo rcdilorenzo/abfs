@@ -1,13 +1,13 @@
 import numpy as np
 
 def test_loading_data_frame(data):
-    assert len(data.df) == 50
+    assert len(data.df) == 99
 
 def test_sq_ft_column_created(data):
     assert data.df.sq_ft.sum() > 0
 
 def test_grouping_by_image_ids(data):
-    assert len(data.image_ids) == 1
+    assert len(data.image_ids) == 3
 
 def test_image_from_id(data):
     image_id = data.image_ids[0]
@@ -20,14 +20,14 @@ def test_mask_from_image(data):
     image = data.mask_for(image_id)
 
     assert image.shape == (406, 439)
-    assert np.sum(image) == 16692
+    assert np.sum(image) == 17118
 
 def test_filtering_data(data):
     data.data_filter = lambda df: df.sq_ft > 10
-    assert len(data.df) < 50
+    assert len(data.df) < 99
 
     data.reset_filter()
-    assert len(data.df) == 50
+    assert len(data.df) == 99
 
 def test_green_mask(data):
     image_id = data.image_ids[0]
@@ -46,4 +46,5 @@ def test_filtering_then_creating_mask_from_image(data):
     all_buildings = data.mask_for(image_id)
 
     assert np.sum(all_buildings) > np.sum(larger_buildings_only)
+
 
