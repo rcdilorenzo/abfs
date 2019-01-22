@@ -1,3 +1,0 @@
-[submodule "vendor/spacenet_lib"]
-	path = vendor/spacenet_lib
-	url = git@github.com:motokimura/spacenet_lib.git
