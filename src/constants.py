@@ -1,7 +1,7 @@
 import os
 from collections import namedtuple as Struct
 
-DataConfig = Struct('DataConfig', ['path', 'band', 'region', 'output_dir'])
+DataConfig = Struct('DataConfig', ['path', 'band', 'region'])
 
 DEFAULT_DATA_DIR =  os.path.expanduser('~/workspaces/data/spacenet/')
 
@@ -13,7 +13,3 @@ BAND3 = '3band'
 BAND8 = '8band'
 VECTOR = 'vectordata/geojson'
 SUMMARY = 'vectordata/summarydata'
-
-def data_dir(region):
-    return os.path.join(TOP_LEVEL_DATA_DIR, region)
-
