@@ -1,8 +1,9 @@
 import numpy as np
 import shapely.wkt
 import matplotlib.pyplot as plt
+from math import ceil
 from skimage import color
-from toolz import memoize
+from toolz import memoize, curry
 from osgeo import ogr, gdal, osr
 from spacenetutilities import geoTools
 
@@ -16,13 +17,38 @@ BINARY_WHITE = 1
 ALWAYS_TRUE = lambda df: df.index != -1
 
 class Data():
-    def __init__(self, config, split_config=DEFAULT_SPLIT_CONFIG):
+    def __init__(self, config,
+                 split_config=DEFAULT_SPLIT_CONFIG,
+                 batch_size=16,
+                 override_df=None,
+                 augment=False):
+
         self.config = config
-        self._split_config = split_config
-        self._df = None
+        self.split_config = split_config
+        self._df = override_df
         self._image_ids = []
         self._data_filter = ALWAYS_TRUE
         self._split_data = None
+
+        # Require batch size to be divisible by two if augmentation enabled
+        assert augment == False or batch_size % 2 == 0
+
+        self.batch_size = batch_size
+        self.augment = augment
+
+    # ============
+    # General
+    # ============
+
+    @property
+    def image_ids(self):
+        if self._image_ids == []:
+            self._image_ids = self.df.ImageId.unique()
+
+        return self._image_ids
+
+    def grouped_df(self):
+        return self.df.groupby('ImageId')
 
     @property
     def df(self):
@@ -37,21 +63,43 @@ class Data():
 
         return self._df[self.data_filter(self._df)]
 
+    # ====================
+    # Train/Val/Test Data
+    # ====================
+
+    def train_data(self, batch_id):
+        df = self.split_data.train_df()
+        return self._batch_data(df, self.augment, batch_id)
+
+    def train_batch_count(self):
+        return self._batch_count(self.split_data.train_df())
+
+    def val_data(self, batch_id):
+        df = self.split_data.val_df
+        return self._batch_data(df, False, batch_id)
+
+    def val_batch_count(self):
+        return self._batch_count(self.split_data.val_df)
+
+    def test_data(self, batch_id):
+        df = self.split_data.test_df
+        return self._batch_data(df, False, batch_id)
+
+    def test_batch_count(self):
+        return self._batch_count(self.split_data.test_df)
+
     @property
     def split_data(self):
         if self._split_data is None:
             self._split_data = GroupDataSplit(
-                self.df, 'ImageId', self._split_config
+                self.df, 'ImageId', self.split_config
             )
 
         return self._split_data
 
-    @property
-    def image_ids(self):
-        if self._image_ids == []:
-            self._image_ids = self.df.ImageId.unique()
-
-        return self._image_ids
+    # ==================
+    # Data Filters
+    # ==================
 
     @property
     def data_filter(self):
@@ -65,11 +113,27 @@ class Data():
     def reset_filter(self):
         self.data_filter = ALWAYS_TRUE
 
-    def grouped_df(self):
-        return self.df.groupby('ImageId')
+    # ==================
+    # Images / Masks
+    # ==================
 
     def image_for(self, image_id):
         return plt.imread(image_id_to_path(self.config, image_id))
+
+    def green_mask_for(self, image_id):
+        mask = self.mask_for(image_id)
+        blank = np.zeros(mask.shape)
+
+        return np.dstack([blank, mask, blank])
+
+    def mask_overlay_for(self, image_id):
+        color_mask_hsv = color.rgb2hsv(self.green_mask_for(image_id))
+
+        image_hsv = color.rgb2hsv(self.image_for(image_id))
+        image_hsv[..., 0] = color_mask_hsv[..., 0]
+        image_hsv[..., 1] = color_mask_hsv[..., 1] * 0.8
+
+        return color.hsv2rgb(image_hsv)
 
     def mask_for(self, image_id):
         # Note: If certain parts of this method are extracted, a segmentation
@@ -126,18 +190,21 @@ class Data():
         # Return image mask result as np.array
         return np.array(destination_layer.ReadAsArray())
 
-    def green_mask_for(self, image_id):
-        mask = self.mask_for(image_id)
-        blank = np.zeros(mask.shape)
+    # ==================
+    # Private Methods
+    # ==================
 
-        return np.dstack([blank, mask, blank])
+    def _batch_data(self, df, augment, batch_id):
+        batch_size = int(self.batch_size / (int(augment) + 1))
 
-    def mask_overlay_for(self, image_id):
-        color_mask_hsv = color.rgb2hsv(self.green_mask_for(image_id))
+        start_index = batch_id * batch_size
+        end_index = start_index + batch_size
+        image_ids = df.ImageId.unique()[start_index:end_index]
 
-        image_hsv = color.rgb2hsv(self.image_for(image_id))
-        image_hsv[..., 0] = color_mask_hsv[..., 0]
-        image_hsv[..., 1] = color_mask_hsv[..., 1] * 0.8
+        return Data(self.config,
+                    override_df=df[df.ImageId.isin(image_ids)],
+                    augment=augment)
 
-        return color.hsv2rgb(image_hsv)
+    def _batch_count(self, df):
+        return ceil(df.ImageId.nunique() / self.batch_size)
 
