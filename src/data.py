@@ -8,6 +8,7 @@ from spacenetutilities import geoTools
 
 from src.path import *
 from src.constants import *
+from src.group_data_split import GroupDataSplit, DEFAULT_SPLIT_CONFIG
 from src.conversions import area_in_square_feet
 
 BLACK = 0
@@ -15,11 +16,13 @@ BINARY_WHITE = 1
 ALWAYS_TRUE = lambda df: df.index != -1
 
 class Data():
-    def __init__(self, config):
+    def __init__(self, config, split_config=DEFAULT_SPLIT_CONFIG):
         self.config = config
+        self._split_config = split_config
         self._df = None
         self._image_ids = []
-        self.data_filter = ALWAYS_TRUE
+        self._data_filter = ALWAYS_TRUE
+        self._split_data = None
 
     @property
     def df(self):
@@ -35,11 +38,29 @@ class Data():
         return self._df[self.data_filter(self._df)]
 
     @property
+    def split_data(self):
+        if self._split_data is None:
+            self._split_data = GroupDataSplit(
+                self.df, 'ImageId', self._split_config
+            )
+
+        return self._split_data
+
+    @property
     def image_ids(self):
         if self._image_ids == []:
             self._image_ids = self.df.ImageId.unique()
 
         return self._image_ids
+
+    @property
+    def data_filter(self):
+        return self._data_filter
+
+    @data_filter.setter
+    def data_filter(self, data_filter):
+        self._data_filter = data_filter
+        self._split_data = None
 
     def reset_filter(self):
         self.data_filter = ALWAYS_TRUE

@@ -47,4 +47,13 @@ def test_filtering_then_creating_mask_from_image(data):
 
     assert np.sum(all_buildings) > np.sum(larger_buildings_only)
 
+def test_split_data(data):
+    assert data.split_data.total == len(data.df)
+
+def test_filtering_then_accessing_split_data(data):
+    original_count = data.split_data.total
+
+    data.data_filter = lambda df: df.sq_ft > 10
+
+    assert data.split_data.total < original_count
 
