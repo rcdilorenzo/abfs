@@ -1,6 +1,7 @@
 import numpy as np
 import shapely.wkt
 import matplotlib.pyplot as plt
+import pandas as pd
 from math import ceil
 from PIL import Image
 from skimage import color
@@ -8,8 +9,8 @@ from funcy import iffy, constantly, tap
 from toolz import memoize, curry, compose, pipe
 from toolz.curried import map, juxt, mapcat, concatv
 from toolz.sandbox.core import unzip
+from geopandas import gpd
 from osgeo import ogr, gdal, osr
-from spacenetutilities import geoTools
 
 from src.path import *
 from src.constants import *
@@ -67,9 +68,15 @@ class Data():
         if self._df is None:
             region_upper = self.config.region.upper()
 
-            self._df = geoTools.readwktcsv(file_path(
+            df = pd.read_csv(file_path(
                 self.config, SUMMARY,
                 f'{region_upper}_polygons_solution_{self.config.band}.csv'))
+
+            geometry = [shapely.wkt.loads(x)
+                        for x in df['PolygonWKT_Geo'].values]
+
+            self._df = gpd.GeoDataFrame(df, crs={'init': 'epsg:4326'},
+                                        geometry=geometry)
 
             self._df['sq_ft'] = self._df.geometry.apply(area_in_square_feet)
 
