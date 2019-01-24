@@ -101,7 +101,7 @@ def test_train_batch_count_with_augmentation(data):
     data.batch_size = 2
     data.augment = True
 
-    assert data.train_batch_count() == 2
+    assert data.train_batch_count() == 3
 
     # Number of images has been halved since each with have an associated
     # augmented counterpart

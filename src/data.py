@@ -91,7 +91,8 @@ class Data():
             map(self._to_single_nn(shape)),
             list_unzip,
             iffy(constantly(self.augment), self._augment_nn),
-            map(np.array)
+            map(np.array),
+            list
         )
 
     # ====================
@@ -103,21 +104,21 @@ class Data():
         return self._batch_data(df, self.augment, batch_id)
 
     def train_batch_count(self):
-        return self._batch_count(self.split_data.train_df())
+        return self._batch_count(self.split_data.train_df(), self.augment)
 
     def val_batch_data(self, batch_id):
         df = self.split_data.val_df
         return self._batch_data(df, False, batch_id)
 
     def val_batch_count(self):
-        return self._batch_count(self.split_data.val_df)
+        return self._batch_count(self.split_data.val_df, False)
 
     def test_batch_data(self, batch_id):
         df = self.split_data.test_df
         return self._batch_data(df, False, batch_id)
 
     def test_batch_count(self):
-        return self._batch_count(self.split_data.test_df)
+        return self._batch_count(self.split_data.test_df, False)
 
     @property
     def split_data(self):
@@ -226,7 +227,7 @@ class Data():
     # ==================
 
     def _batch_data(self, df, augment, batch_id):
-        batch_size = int(self.batch_size / (int(augment) + 1))
+        batch_size = self.batch_size // (int(augment) + 1)
 
         start_index = batch_id * batch_size
         end_index = start_index + batch_size
@@ -236,8 +237,9 @@ class Data():
                     override_df=df[df.ImageId.isin(image_ids)],
                     augment=augment)
 
-    def _batch_count(self, df):
-        return ceil(df.ImageId.nunique() / self.batch_size)
+    def _batch_count(self, df, augment):
+        batch_size = self.batch_size // (int(augment) + 1)
+        return ceil(df.ImageId.nunique() / batch_size)
 
     @curry
     def _to_single_nn(self, shape, image_id):
