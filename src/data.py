@@ -98,21 +98,21 @@ class Data():
     # Train/Val/Test Data
     # ====================
 
-    def train_data(self, batch_id):
+    def train_batch_data(self, batch_id):
         df = self.split_data.train_df()
         return self._batch_data(df, self.augment, batch_id)
 
     def train_batch_count(self):
         return self._batch_count(self.split_data.train_df())
 
-    def val_data(self, batch_id):
+    def val_batch_data(self, batch_id):
         df = self.split_data.val_df
         return self._batch_data(df, False, batch_id)
 
     def val_batch_count(self):
         return self._batch_count(self.split_data.val_df)
 
-    def test_data(self, batch_id):
+    def test_batch_data(self, batch_id):
         df = self.split_data.test_df
         return self._batch_data(df, False, batch_id)
 
@@ -257,3 +257,4 @@ class Data():
     @curry
     def _resize_image(self, shape, image):
         return np.array(Image.fromarray(image).resize(shape))
+

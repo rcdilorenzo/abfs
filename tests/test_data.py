@@ -70,17 +70,17 @@ def test_filtering_then_accessing_split_data(data):
 
     assert data.split_data.total < original_count
 
-# =======
+# ===========
 # Batches
-# =======
+# ===========
 
 def test_train_batch(data):
     data.split_config = DataSplitConfig(0, 0, 0)
     data.batch_size = 2
     data.augment = False
 
-    assert len(data.train_data(0).df.ImageId.unique()) == 2
-    assert len(data.train_data(1).df.ImageId.unique()) == 1
+    assert len(data.train_batch_data(0).df.ImageId.unique()) == 2
+    assert len(data.train_batch_data(1).df.ImageId.unique()) == 1
 
 def test_train_batch_count_with_partial_last_batch(data):
     data.split_config = DataSplitConfig(0, 0, 0)
@@ -105,7 +105,7 @@ def test_train_batch_count_with_augmentation(data):
 
     # Number of images has been halved since each with have an associated
     # augmented counterpart
-    assert len(data.train_data(0).df.ImageId.unique()) == 1
+    assert len(data.train_batch_data(0).df.ImageId.unique()) == 1
 
 def test_val_batch(data):
     data.split_config = DataSplitConfig(0.99, 0, 0)
@@ -113,8 +113,8 @@ def test_val_batch(data):
     data.augment = True # No-op
     data._split_data = None
 
-    assert len(data.val_data(0).df.ImageId.unique()) == 2
-    assert len(data.val_data(1).df.ImageId.unique()) == 1
+    assert len(data.val_batch_data(0).df.ImageId.unique()) == 2
+    assert len(data.val_batch_data(1).df.ImageId.unique()) == 1
 
 def test_val_batch_count(data):
     data.split_config = DataSplitConfig(0.99, 0, 0)
@@ -127,8 +127,8 @@ def test_test_batch(data):
     data.split_config = DataSplitConfig(0, 0.6, 0)
     data.batch_size = 1
 
-    assert len(data.test_data(0).df.ImageId.unique()) == 1
-    assert len(data.test_data(1).df.ImageId.unique()) == 1
+    assert len(data.test_batch_data(0).df.ImageId.unique()) == 1
+    assert len(data.test_batch_data(1).df.ImageId.unique()) == 1
 
 def test_test_batch_count(data):
     data.split_config = DataSplitConfig(0, 0.4, 0)
