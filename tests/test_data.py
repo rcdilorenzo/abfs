@@ -136,3 +136,26 @@ def test_test_batch_count(data):
     data.augment = True # No-op
 
     assert data.test_batch_count() == 2
+
+# ============================
+# Neural Network Input/Output
+# ============================
+
+def test_neural_network_input_output(data):
+    IMAGE_COUNT = 3
+    data.augment = False
+
+    inputs, outputs = data.to_nn((500, 500))
+
+    assert inputs.shape == (IMAGE_COUNT, 500, 500, 3)
+    assert outputs.shape == (IMAGE_COUNT, 500, 500)
+
+def test_neural_network_input_output_with_augmentation(data):
+    data.split_config = DataSplitConfig(0, 0, 0)
+    data.batch_size = 2
+    data.augment = True
+
+    inputs, outputs = data.train_batch_data(0).to_nn((500, 500))
+
+    assert inputs.shape == (2, 500, 500, 3)
+    assert outputs.shape == (2, 500, 500)

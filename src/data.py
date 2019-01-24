@@ -2,8 +2,12 @@ import numpy as np
 import shapely.wkt
 import matplotlib.pyplot as plt
 from math import ceil
+from PIL import Image
 from skimage import color
-from toolz import memoize, curry
+from funcy import iffy, constantly, tap
+from toolz import memoize, curry, compose, pipe
+from toolz.curried import map, juxt, mapcat, concatv
+from toolz.sandbox.core import unzip
 from osgeo import ogr, gdal, osr
 from spacenetutilities import geoTools
 
@@ -11,6 +15,10 @@ from src.path import *
 from src.constants import *
 from src.group_data_split import GroupDataSplit, DEFAULT_SPLIT_CONFIG
 from src.conversions import area_in_square_feet
+from src.segmentation_augmentation import SegmentationAugmentation, MOVE_SCALE_ROTATE
+
+list_unzip = compose(map(list), unzip)
+list_concatv = compose(list, concatv)
 
 BLACK = 0
 BINARY_WHITE = 1
@@ -19,8 +27,10 @@ ALWAYS_TRUE = lambda df: df.index != -1
 class Data():
     def __init__(self, config,
                  split_config=DEFAULT_SPLIT_CONFIG,
+                 seg_aug_config=MOVE_SCALE_ROTATE,
                  batch_size=16,
                  override_df=None,
+                 aug_random_seed=None,
                  augment=False):
 
         self.config = config
@@ -35,6 +45,8 @@ class Data():
 
         self.batch_size = batch_size
         self.augment = augment
+        self.augmentation = SegmentationAugmentation(seg_aug_config,
+                                                     seed=aug_random_seed)
 
     # ============
     # General
@@ -62,6 +74,25 @@ class Data():
             self._df['sq_ft'] = self._df.geometry.apply(area_in_square_feet)
 
         return self._df[self.data_filter(self._df)]
+
+    # =============================
+    # Neural Network Input/Output
+    # =============================
+
+    def to_nn(self, shape):
+        """Convert data to neural network inputs/outputs
+
+        NOTE: Image pixels have an output range of 0-255. They should be
+        fractionalized before being sent to a neural network.
+        """
+
+        return pipe(
+            self.df.ImageId.unique(),
+            map(self._to_single_nn(shape)),
+            list_unzip,
+            iffy(constantly(self.augment), self._augment_nn),
+            map(np.array)
+        )
 
     # ====================
     # Train/Val/Test Data
@@ -208,3 +239,21 @@ class Data():
     def _batch_count(self, df):
         return ceil(df.ImageId.nunique() / self.batch_size)
 
+    @curry
+    def _to_single_nn(self, shape, image_id):
+        return pipe(
+            image_id,
+            juxt(self.image_for, self.mask_for),
+            map(self._resize_image(shape)),
+            list
+        )
+
+    def _augment_nn(self, inputs_and_outputs):
+        images, masks = inputs_and_outputs
+        aug_images, aug_masks = self.augmentation.run(images, masks)
+
+        return list_concatv(images, aug_images), list_concatv(masks, aug_masks)
+
+    @curry
+    def _resize_image(self, shape, image):
+        return np.array(Image.fromarray(image).resize(shape))
