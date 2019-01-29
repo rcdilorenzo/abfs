@@ -1,4 +1,4 @@
-from src.group_data_split import GroupDataSplit, DataSplitConfig
+from abfs.group_data_split import GroupDataSplit, DataSplitConfig
 
 def test_total(sample_df):
     split = GroupDataSplit(sample_df, key='group_id')

@@ -3,8 +3,8 @@ import pytest
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from src.data import Data
-from src.constants import DataConfig, BAND3, RIO_REGION
+from abfs.data import Data
+from abfs.constants import DataConfig, BAND3, RIO_REGION
 
 TOP_LEVEL_DATA_DIR = os.path.join(os.path.dirname(__file__),
                                   './fixtures/spacenet')

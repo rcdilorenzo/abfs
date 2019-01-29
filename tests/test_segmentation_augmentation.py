@@ -1,5 +1,5 @@
 from scipy.misc import imsave
-from src.segmentation_augmentation import SegmentationAugmentation, SegAugmentationConfig
+from abfs.segmentation_augmentation import SegmentationAugmentation, SegAugmentationConfig
 import numpy as np
 
 def test_move_rotate_augmentation(sample_image, box_mask):

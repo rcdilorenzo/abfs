@@ -14,5 +14,10 @@ setup(
         # 'matplotlib'
     ],
     tests_require = ['pytest', 'pytest-watch'],
-    packages = find_packages()
+    packages = ['abfs'],
+    entry_points = {
+        "console_scripts": [
+            "abfs = abfs.__main__:main",
+        ]
+    }
 )

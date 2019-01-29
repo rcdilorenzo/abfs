@@ -1,5 +1,5 @@
 import numpy as np
-from src.group_data_split import DataSplitConfig
+from abfs.group_data_split import DataSplitConfig
 
 def test_loading_data_frame(data):
     assert len(data.df) == 99

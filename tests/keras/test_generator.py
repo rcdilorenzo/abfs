@@ -1,5 +1,5 @@
 import numpy as np
-from src.keras.generator import Generator
+from abfs.keras.generator import Generator
 
 def test_creating_train_generator_from_data(data):
     generator = data.train_generator(Generator, (200, 200))

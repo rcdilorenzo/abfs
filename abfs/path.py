@@ -1,5 +1,5 @@
 import os
-from src.constants import *
+from abfs.constants import *
 
 def file_path(config, subfolder, filename):
     return os.path.join(config.path, config.region,
