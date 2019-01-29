@@ -102,7 +102,8 @@ class Data():
             list_unzip,
             iffy(constantly(self.augment), self._augment_nn),
             map(np.array),
-            list
+            list,
+            self._reshape_output
         )
 
     # ====================
@@ -285,6 +286,10 @@ class Data():
         aug_images, aug_masks = self.augmentation.run(images, masks)
 
         return list_concatv(images, aug_images), list_concatv(masks, aug_masks)
+
+    def _reshape_output(self, inputs_and_outputs):
+        inputs, outputs = inputs_and_outputs
+        return inputs, outputs[:, :, :, np.newaxis]
 
     @curry
     def _resize_image(self, shape, image):

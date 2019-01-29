@@ -148,7 +148,7 @@ def test_neural_network_input_output(data):
     inputs, outputs = data.to_nn((500, 500))
 
     assert inputs.shape == (IMAGE_COUNT, 500, 500, 3)
-    assert outputs.shape == (IMAGE_COUNT, 500, 500)
+    assert outputs.shape == (IMAGE_COUNT, 500, 500, 1)
 
 def test_neural_network_input_output_with_augmentation(data):
     data.split_config = DataSplitConfig(0, 0, 0)
@@ -158,4 +158,4 @@ def test_neural_network_input_output_with_augmentation(data):
     inputs, outputs = data.train_batch_data(0).to_nn((500, 500))
 
     assert inputs.shape == (2, 500, 500, 3)
-    assert outputs.shape == (2, 500, 500)
+    assert outputs.shape == (2, 500, 500, 1)
