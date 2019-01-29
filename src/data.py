@@ -5,7 +5,7 @@ import pandas as pd
 from math import ceil
 from PIL import Image
 from skimage import color
-from funcy import iffy, constantly, tap
+from funcy import iffy, constantly, tap, rpartial
 from toolz import memoize, curry, compose, pipe
 from toolz.curried import map, juxt, mapcat, concatv
 from toolz.sandbox.core import unzip
@@ -82,6 +82,9 @@ class Data():
 
         return self._df[self.data_filter(self._df)]
 
+    def __eq__(self, obj):
+        return self._df.eq(obj._df).all().all()
+
     # =============================
     # Neural Network Input/Output
     # =============================
@@ -107,18 +110,26 @@ class Data():
     # ====================
 
     def train_generator(self, klass, shape):
-        return klass(self.train_batch_count, self.train_batch_data, shape)
+        def params():
+            df = self.split_data.train_df()
+            len_f = rpartial(self.train_batch_count, df)
+            data_f = rpartial(self.train_batch_data, df)
+            return len_f, data_f
 
-    def train_batch_data(self, batch_id):
-        df = self.split_data.train_df()
+        return klass(params, shape)
+
+    def train_batch_data(self, batch_id, df=None):
+        if df is None: df = self.split_data.train_df()
         return self._batch_data(df, self.augment, batch_id)
 
-    def train_batch_count(self):
-        return self._batch_count(self.split_data.train_df(), self.augment)
+    def train_batch_count(self, df=None):
+        if df is None: df = self.split_data.train_df()
+        return self._batch_count(df, self.augment)
 
 
     def val_generator(self, klass, shape):
-        return klass(self.val_batch_count, self.val_batch_data, shape)
+        return klass(lambda: (self.val_batch_count, self.val_batch_data),
+                     shape)
 
     def val_batch_data(self, batch_id):
         df = self.split_data.val_df
@@ -129,7 +140,8 @@ class Data():
 
 
     def test_generator(self, klass, shape):
-        return klass(self.test_batch_count, self.test_batch_data, shape)
+        return klass(lambda: (self.test_batch_count, self.test_batch_data),
+                     shape)
 
     def test_batch_data(self, batch_id):
         df = self.split_data.test_df
