@@ -106,6 +106,9 @@ class Data():
     # Train/Val/Test Data
     # ====================
 
+    def train_generator(self, klass, shape):
+        return klass(self.train_batch_count, self.train_batch_data, shape)
+
     def train_batch_data(self, batch_id):
         df = self.split_data.train_df()
         return self._batch_data(df, self.augment, batch_id)
@@ -113,12 +116,20 @@ class Data():
     def train_batch_count(self):
         return self._batch_count(self.split_data.train_df(), self.augment)
 
+
+    def val_generator(self, klass, shape):
+        return klass(self.val_batch_count, self.val_batch_data, shape)
+
     def val_batch_data(self, batch_id):
         df = self.split_data.val_df
         return self._batch_data(df, False, batch_id)
 
     def val_batch_count(self):
         return self._batch_count(self.split_data.val_df, False)
+
+
+    def test_generator(self, klass, shape):
+        return klass(self.test_batch_count, self.test_batch_data, shape)
 
     def test_batch_data(self, batch_id):
         df = self.split_data.test_df
