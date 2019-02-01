@@ -130,7 +130,7 @@ class UNet():
 
         return [
             TerminateOnNaN(),
-            CustomTensorBoard(log_dir, self.val_generator),
+            CustomTensorBoard(log_dir, self.data, self.shape),
             ModelCheckpoint('checkpoints/' + model_format,
                             save_best_only=True, period=1)
         ]
