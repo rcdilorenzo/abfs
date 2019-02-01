@@ -23,7 +23,7 @@ def train(args):
     data.data_filter = lambda df: df.sq_ft > 0
 
     # Create model
-    unet = UNet(data, (512, 512), max_batches=5)
+    unet = UNet(data, (512, 512), max_batches=40)
 
     # Print summary
     unet.model.summary()

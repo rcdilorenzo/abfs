@@ -54,7 +54,9 @@ class UNet():
         self.max_batches = max_batches
 
     def train(self):
-        self.model.compile(optimizer = Adam(lr = 1e-4), loss = 'binary_crossentropy', metrics = [mean_iou])
+        self.model.compile(optimizer=Adam(lr = 1e-4),
+                           loss='binary_crossentropy',
+                           metrics=[mean_iou])
 
         self.model.fit_generator(self.train_generator,
                                  validation_data=self.val_generator,
@@ -63,12 +65,16 @@ class UNet():
     @property
     @memoize
     def train_generator(self):
-        return self.data.train_generator(Generator, self.shape, max_batches=self.max_batches)
+        return self.data.train_generator(Generator,
+                                         self.shape,
+                                         max_batches=self.max_batches)
 
     @property
     @memoize
     def val_generator(self):
-        return self.data.val_generator(Generator, self.shape, max_batches=self.max_batches)
+        return self.data.val_generator(Generator,
+                                       self.shape,
+                                       max_batches=self.max_batches)
 
 
     @property
