@@ -180,6 +180,33 @@ class Data():
     # Images / Masks
     # ==================
 
+    def sample_image_predict(self, shape, predict_f):
+        images, masks = self.to_nn(shape)
+
+        input_data = images[0]
+        input_image = input_data * 255
+        truth_mask = np.squeeze(masks[0])
+
+        # Run prediction
+        predicted = np.squeeze(predict_f(input_data))
+        print(predicted.shape)
+
+        wrong = np.logical_xor(truth_mask, predicted)
+        correct = np.logical_and(truth_mask, predicted)
+        blank = np.zeros(truth_mask.shape)
+
+        # Red = wrong, Green = correct, Blue = none
+        pred_vs_truth_mask = np.dstack([wrong, correct, blank])
+
+        # Create vibrancy overlay
+        color_mask_hsv = color.rgb2hsv(pred_vs_truth_mask)
+        image_hsv = color.rgb2hsv(input_image)
+        image_hsv[..., 0] = color_mask_hsv[..., 0]
+        image_hsv[..., 1] = color_mask_hsv[..., 1] * 0.9
+
+        return color.hsv2rgb(image_hsv) * 255
+
+
     def image_for(self, image_id):
         return plt.imread(image_id_to_path(self.config, image_id))
 

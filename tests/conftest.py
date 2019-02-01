@@ -3,6 +3,9 @@ import pytest
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from pytest import fail
+from scipy.misc import imsave, imread
+
 from abfs.data import Data
 from abfs.constants import DataConfig, BAND3, RIO_REGION
 
@@ -46,3 +49,20 @@ def box_mask():
         return box_mask
 
     return _box_mask
+
+def compare_image(received, filename):
+    approved_path = f'tests/fixtures/{filename}.approved.png'
+    received_path = f'tests/fixtures/{filename}.received.png'
+    imsave(received_path, received)
+
+    if os.path.isfile(approved_path) is False:
+        fail(f'No image explicitly approved. Please verify {received_path}.')
+        return
+
+    approved_image = imread(approved_path)
+    received_image = imread(received_path)
+
+    if (approved_image != received_image).any():
+        fail(f'{received_path} != {approved_path}. Please verify.')
+    else:
+        os.remove(received_path)

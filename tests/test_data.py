@@ -1,4 +1,5 @@
 import numpy as np
+from conftest import compare_image
 from abfs.group_data_split import DataSplitConfig
 
 def test_loading_data_frame(data):
@@ -19,6 +20,15 @@ def test_image_from_id(data):
 # ===========
 # Image Masks
 # ===========
+
+def test_prediction_sample_mask(data, box_mask):
+    shape = (400, 400)
+    result = data.sample_image_predict(
+        shape,
+        lambda _: box_mask(shape)[:, :, np.newaxis]
+    )
+
+    compare_image(result, 'sample_mask')
 
 def test_mask_from_image(data):
     image_id = data.image_ids[0]
