@@ -1,13 +1,15 @@
+import math
 from keras.utils import Sequence
 
 class Generator(Sequence):
-    def __init__(self, params_f, shape):
+    def __init__(self, params_f, shape, max_batches=math.inf):
         self.params_f = params_f
         self.shape = shape
+        self.max_batches = max_batches
         self.on_epoch_end()
 
     def __len__(self):
-        return self.len_f()
+        return min(self.len_f(), self.max_batches)
 
     def __getitem__(self, batch_id):
         return self.data_for_batch_id(batch_id).to_nn(self.shape)

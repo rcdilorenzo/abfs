@@ -110,14 +110,14 @@ class Data():
     # Train/Val/Test Data
     # ====================
 
-    def train_generator(self, klass, shape):
+    def train_generator(self, klass, shape, **kwargs):
         def params():
             df = self.split_data.train_df()
             len_f = rpartial(self.train_batch_count, df)
             data_f = rpartial(self.train_batch_data, df)
             return len_f, data_f
 
-        return klass(params, shape)
+        return klass(params, shape, **kwargs)
 
     def train_batch_data(self, batch_id, df=None):
         if df is None: df = self.split_data.train_df()
@@ -128,9 +128,9 @@ class Data():
         return self._batch_count(df, self.augment)
 
 
-    def val_generator(self, klass, shape):
+    def val_generator(self, klass, shape, **kwargs):
         return klass(lambda: (self.val_batch_count, self.val_batch_data),
-                     shape)
+                     shape, **kwargs)
 
     def val_batch_data(self, batch_id):
         df = self.split_data.val_df
