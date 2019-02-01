@@ -1,13 +1,22 @@
 import numpy as np
 from abfs.keras.generator import Generator
 
+def test_scaling_generator_inputs(data):
+    generator = data.train_generator(Generator, (200, 200))
+
+    inputs, _outputs = generator.__getitem__(0)
+
+    assert inputs.max() <= 1
+    assert inputs.min() >= 0
+
 def test_creating_train_generator_from_data(data):
     generator = data.train_generator(Generator, (200, 200))
 
     assert len(generator) == data.train_batch_count()
 
     actual_inputs, actual_outputs = generator.__getitem__(0)
-    expected_inputs, expected_outputs = data.train_batch_data(0).to_nn((200, 200))
+    expected_inputs, expected_outputs = (data.train_batch_data(0)
+                                         .to_nn((200, 200), scale_pixels=True))
 
     assert np.all(actual_inputs == expected_inputs)
     assert np.all(actual_outputs == expected_outputs)

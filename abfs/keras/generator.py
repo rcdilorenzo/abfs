@@ -12,7 +12,8 @@ class Generator(Sequence):
         return min(self.len_f(), self.max_batches)
 
     def __getitem__(self, batch_id):
-        return self.data_for_batch_id(batch_id).to_nn(self.shape)
+        return (self.data_for_batch_id(batch_id)
+                .to_nn(self.shape, scale_pixels=True))
 
     def on_epoch_end(self):
         len_f, data_f = self.params_f()

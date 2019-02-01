@@ -11,6 +11,7 @@ from toolz.curried import map, juxt, mapcat, concatv
 from toolz.sandbox.core import unzip
 from geopandas import gpd
 from osgeo import ogr, gdal, osr
+from lenses import lens
 
 from abfs.path import *
 from abfs.constants import *
@@ -89,11 +90,8 @@ class Data():
     # Neural Network Input/Output
     # =============================
 
-    def to_nn(self, shape):
+    def to_nn(self, shape, scale_pixels=False):
         """Convert data to neural network inputs/outputs
-
-        NOTE: Image pixels have an output range of 0-255. They should be
-        fractionalized before being sent to a neural network.
         """
 
         return pipe(
@@ -103,6 +101,7 @@ class Data():
             iffy(constantly(self.augment), self._augment_nn),
             map(np.array),
             list,
+            iffy(constantly(scale_pixels), lens[0].modify(lambda x: x / 255)),
             self._reshape_output
         )
 
@@ -189,7 +188,6 @@ class Data():
 
         # Run prediction
         predicted = np.squeeze(predict_f(input_data))
-        print(predicted.shape)
 
         wrong = np.logical_xor(truth_mask, predicted)
         correct = np.logical_and(truth_mask, predicted)
