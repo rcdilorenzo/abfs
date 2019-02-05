@@ -4,6 +4,8 @@ from toolz import memoize
 import h5py
 import math
 import uuid
+
+import abfs.keras.metrics
 from abfs.keras.generator import Generator
 from abfs.keras.custom_tensor_board import CustomTensorBoard
 
@@ -14,53 +16,25 @@ from keras.optimizers import *
 from keras.callbacks import ModelCheckpoint, TerminateOnNaN
 import keras.backend as K
 
-# Source: https://stackoverflow.com/a/50266195/2740693
-def mean_iou(labels, predictions):
-    """
-    labels,prediction with shape of [batch,height,width,class_number=2]
-    """
-    mean_iou = K.variable(0.0)
-    seen_classes = K.variable(0.0)
-
-    for c in range(2):
-        labels_c = K.cast(K.equal(labels, c), K.floatx())
-        pred_c = K.cast(K.equal(predictions, c), K.floatx())
-
-        labels_c_sum = K.sum(labels_c)
-        pred_c_sum = K.sum(pred_c)
-
-        intersect = K.sum(labels_c*pred_c)
-        union = labels_c_sum + pred_c_sum - intersect
-        iou = intersect / union
-        condition = K.equal(union, 0)
-        mean_iou = K.switch(condition,
-                            mean_iou,
-                            mean_iou+iou)
-        seen_classes = K.switch(condition,
-                                seen_classes,
-                                seen_classes+1)
-
-    mean_iou = K.switch(K.equal(seen_classes, 0),
-                        mean_iou,
-                        mean_iou/seen_classes)
-    return mean_iou
-
-
 class UNet():
-    def __init__(self, data, shape, max_batches=math.inf):
+    def __init__(self, data, shape, max_batches=math.inf, epochs=100):
         self.uuid = uuid.uuid4().hex[0:6]
         self.data = data
         self.shape = shape
         self.max_batches = max_batches
+        self.epochs = epochs
+
+    def mean_iou(self, actual, pred):
+        return abfs.keras.metrics.mean_iou(self.shape, actual, pred)
 
     def train(self):
         self.model.compile(optimizer=Adam(lr = 1e-4),
                            loss='binary_crossentropy',
-                           metrics=[mean_iou])
+                           metrics=[self.mean_iou])
 
         self.model.fit_generator(self.train_generator,
                                  validation_data=self.val_generator,
-                                 epochs=100, callbacks=self._callbacks())
+                                 epochs=self.epochs, callbacks=self._callbacks())
 
     @property
     @memoize
