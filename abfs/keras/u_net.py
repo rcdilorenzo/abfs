@@ -1,5 +1,5 @@
 from funcy import rpartial
-from toolz import memoize, pipe
+from toolz import memoize, pipe, curry
 
 import h5py
 import math
@@ -50,6 +50,43 @@ class UNet():
                                        self.shape,
                                        max_batches=self.max_batches)
 
+    @curry
+    def conv_block(self, filters, kernel_size, last_layer):
+        return pipe(
+            last_layer,
+            Conv2D(filters, kernel_size,
+                   activation = 'relu',
+                   padding = 'same',
+                   kernel_initializer = 'he_normal'),
+            Conv2D(filters, kernel_size,
+                   activation = 'relu',
+                   padding = 'same',
+                   kernel_initializer = 'he_normal')
+        )
+
+    @curry
+    def conv_up_block(self, filters, counterpart_layer, last_layer):
+        up = pipe(
+            last_layer,
+            UpSampling2D(size = (2,2)),
+            Conv2D(filters, 2,
+                    activation = 'relu',
+                    padding = 'same',
+                    kernel_initializer = 'he_normal')
+        )
+        conv_up = pipe(
+            concatenate([counterpart_layer, up], axis=3),
+            Conv2D(filters, 3,
+                    activation = 'relu',
+                    padding = 'same',
+                    kernel_initializer = 'he_normal'),
+            Conv2D(filters, 3,
+                    activation = 'relu',
+                    padding = 'same',
+                    kernel_initializer = 'he_normal')
+        )
+        return conv_up
+
 
     @property
     @memoize
@@ -58,32 +95,25 @@ class UNet():
         height, width = self.shape
 
         inputs = Input((height, width, 3))
-        conv1 = pipe(
-            inputs,
-            Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
+        conv1 = self.conv_block(64, 3, inputs)
+        conv1_out = pipe(
+            conv1,
+            MaxPooling2D(pool_size=(2, 2))
         )
-        pool1 = MaxPooling2D(pool_size=(2, 2))(conv1)
 
-        conv2 = pipe(
-            pool1,
-            Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
+        conv2 = self.conv_block(128, 3, conv1_out)
+        conv2_out = pipe(
+            conv2,
+            MaxPooling2D(pool_size=(2, 2))
         )
-        pool2 = MaxPooling2D(pool_size=(2, 2))(conv2)
 
-        conv3 = pipe(
-            pool2,
-            Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
+        conv3 = self.conv_block(256, 3, conv2_out)
+        conv3_out = pipe(
+            conv3,
+            MaxPooling2D(pool_size=(2, 2))
         )
-        pool3 = MaxPooling2D(pool_size=(2, 2))(conv3)
 
-        conv4 = pipe(
-            pool3,
-            Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
+        conv4 = self.conv_block(512, 3, conv3_out)
         conv4_out = pipe(
             conv4,
             Dropout(0.5),
@@ -92,60 +122,20 @@ class UNet():
 
         conv5 = pipe(
             conv4_out,
-            Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(1024, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
-        conv5_out = pipe(
-            conv5,
+            self.conv_block(1024, 3),
             Dropout(0.5)
         )
 
-        up6 = pipe(
-            conv5_out,
-            UpSampling2D(size = (2,2)),
-            Conv2D(512, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
-        conv6 = pipe(
-            concatenate([conv4, up6], axis=3),
-            Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(512, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
-
-        up7 = pipe(
-            conv6,
-            UpSampling2D(size = (2,2)),
-            Conv2D(256, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
-        conv7 = pipe(
-            concatenate([conv3, up7], axis=3),
-            Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(256, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
-
-        up8 = pipe(
-            conv7,
-            UpSampling2D(size = (2,2)),
-            Conv2D(128, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
-        conv8 = pipe(
-            concatenate([conv2, up8], axis=3),
-            Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(128, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
-
-        up9 = pipe(
-            conv8,
-            UpSampling2D(size = (2,2)),
-            Conv2D(64, 2, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
-        )
-        conv9 = pipe(
-            concatenate([conv1, up9], axis=3),
-            Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
-            Conv2D(64, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal')
+        up_side = pipe(
+            conv5,
+            self.conv_up_block(512, conv4),
+            self.conv_up_block(256, conv3),
+            self.conv_up_block(128, conv2),
+            self.conv_up_block(64, conv1)
         )
 
         output = pipe(
-            conv9,
+            up_side,
             Conv2D(2, 3, activation = 'relu', padding = 'same', kernel_initializer = 'he_normal'),
             Conv2D(1, 1, activation = 'sigmoid')
         )
