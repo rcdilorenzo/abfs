@@ -179,28 +179,40 @@ class Data():
     # Images / Masks
     # ==================
 
-    def sample_image_predict(self, shape, predict_f):
+    def sample_image_predict(self, shape, predict_f, threshold=0.5):
         images, masks = self.to_nn(shape)
 
         input_data = images[0]
         input_image = input_data * 255
-        truth_mask = np.squeeze(masks[0])
+        truth_mask = np.squeeze(masks[0]).astype(np.int8)
 
         # Run prediction
         predicted = np.squeeze(predict_f(input_data))
 
-        wrong = np.logical_xor(truth_mask, predicted)
-        correct = np.logical_and(truth_mask, predicted)
-        blank = np.zeros(truth_mask.shape)
+        # Create mask of which are considered correct
+        predicted_mask = np.zeros(predicted.shape, dtype=np.int8)
+        predicted_mask[predicted[:, :] >= threshold] = 1
+
+        # Create wrong mask that expresses confidence
+        wrong_mask = np.logical_xor(truth_mask, predicted_mask)
+        wrong = predicted * wrong_mask
+
+        # Create correct mask that expresses confidence
+        correct = predicted * np.logical_and(truth_mask, predicted_mask)
+
+        false_negatives = np.logical_and(predicted_mask[:, :] == 0,
+                                         wrong_mask[:, :] == 1)
 
         # Red = wrong, Green = correct, Blue = none
-        pred_vs_truth_mask = np.dstack([wrong, correct, blank])
+        pred_vs_truth_mask = np.dstack([
+            wrong, correct, false_negatives
+        ])
 
         # Create vibrancy overlay
         color_mask_hsv = color.rgb2hsv(pred_vs_truth_mask)
         image_hsv = color.rgb2hsv(input_image)
         image_hsv[..., 0] = color_mask_hsv[..., 0]
-        image_hsv[..., 1] = color_mask_hsv[..., 1] * 0.9
+        image_hsv[..., 1] = color_mask_hsv[..., 1]
 
         return color.hsv2rgb(image_hsv) * 255
 

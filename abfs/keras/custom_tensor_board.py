@@ -14,11 +14,7 @@ class CustomTensorBoard(TensorBoard):
     def _predict(self, image):
         return self.model.predict(np.expand_dims(image, axis=0))[0]
 
-    def on_epoch_end(self, epoch, logs=None):
-        image = (self.data
-                 .val_batch_data(0)
-                 .sample_image_predict(self.shape, self._predict)
-                 .astype(np.uint8))
+    def _tf_image_value(self, image):
         height, width, channel = image.shape
 
         # Convert to PNG string-encoded data format
@@ -32,7 +28,19 @@ class CustomTensorBoard(TensorBoard):
             height=height, width=width,
             colorspace=channel,
             encoded_image_string=image_data)
-        tf_summary = tf.Summary(value=[tf.Summary.Value(image=tf_image)])
+
+        return tf.Summary.Value(image=tf_image)
+
+    def on_epoch_end(self, epoch, logs=None):
+        batch_ids = [0, 3, 4, 5]
+        values = list([self._tf_image_value(
+            self.data
+            .val_batch_data(i)
+            .sample_image_predict(self.shape, self._predict)
+            .astype(np.uint8)
+        ) for i in batch_ids])
+
+        tf_summary = tf.Summary(value=values)
 
         self.writer.add_summary(tf_summary, epoch)
 
