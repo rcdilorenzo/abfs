@@ -33,7 +33,7 @@ class UNet():
         self.learning_rate = learning_rate
 
     def mean_iou(self, actual, pred):
-        return abfs.keras.metrics.mean_iou(self.shape, actual, pred)
+        return abfs.keras.metrics.mean_iou(actual, pred)
 
     def train(self):
         model = self.model
