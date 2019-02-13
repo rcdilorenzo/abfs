@@ -117,14 +117,34 @@ class UNet():
         conv2 = self.conv_block(128, 3, conv1_out)
         conv2_out = pipe(
             conv2,
-            MaxPooling2D(pool_size=(2, 2)),
-            BatchNormalization()
+            Dropout(0.25),
+            MaxPooling2D(pool_size=(2, 2))
         )
 
         conv3 = self.conv_block(256, 3, conv2_out)
+        conv3_out = pipe(
+            conv3,
+            Dropout(0.25),
+            MaxPooling2D(pool_size=(2, 2))
+        )
+
+        conv4 = self.conv_block(512, 3, conv3_out)
+        conv4_out = pipe(
+            conv4,
+            Dropout(0.25),
+            MaxPooling2D(pool_size=(2, 2))
+        )
+
+        conv5 = pipe(
+            conv4_out,
+            self.conv_block(1024, 3),
+            Dropout(0.25)
+        )
 
         up_side = pipe(
-            conv3,
+            conv5,
+            self.conv_up_block(512, conv4),
+            self.conv_up_block(256, conv3),
             self.conv_up_block(128, conv2),
             self.conv_up_block(64, conv1)
         )
