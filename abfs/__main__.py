@@ -35,6 +35,19 @@ def train(args):
     # Begin training
     unet.train()
 
+def export(args):
+    unet = UNet(None, (args.size, args.size))
+
+    # TODO: Check whether model needs to be compiled BEFORE export
+    # unet.compile()
+
+    path = f'models/{args.output}.json'
+    with open(path, 'w') as f:
+        f.write(unet.model.to_json())
+
+    print(f'Save to "{path}"')
+
+
 
 def function_named(name):
     functions = inspect.getmembers(
@@ -58,6 +71,12 @@ def main():
                               help='Maximum batches per epoch')
     train_parser.add_argument('-gpus', '--gpu-count', type=int, default=1)
     train_parser.set_defaults(func=train)
+
+    export_parser = subparsers.add_parser('export', help='Export keras model')
+    export_parser.add_argument('-s', '--size', type=int, default=512,
+                              help='Size of image')
+    export_parser.add_argument('-o', '--output', type=str, default='model_output')
+    export_parser.set_defaults(func=export)
 
     args = parser.parse_args()
     args.func(args)

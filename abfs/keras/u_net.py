@@ -35,7 +35,7 @@ class UNet():
     def mean_iou(self, actual, pred):
         return abfs.keras.metrics.mean_iou(actual, pred)
 
-    def train(self):
+    def compile(self):
         model = self.model
 
         if self.gpu_count > 1:
@@ -45,6 +45,9 @@ class UNet():
                            loss='binary_crossentropy',
                            metrics=[self.mean_iou])
 
+
+    def train(self):
+        self.compile()
         model.fit_generator(self.train_generator,
                             validation_data=self.val_generator,
                             epochs=self.epochs,
