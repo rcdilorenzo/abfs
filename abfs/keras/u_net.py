@@ -48,24 +48,32 @@ class UNet():
 
     def train(self):
         self.compile()
-        model.fit_generator(self.train_generator,
-                            validation_data=self.val_generator,
-                            epochs=self.epochs,
-                            callbacks=self._callbacks())
+        self.model.fit_generator(self.train_generator,
+                                 validation_data=self.val_generator,
+                                 epochs=self.epochs,
+                                 callbacks=self._callbacks())
+
+    def evaluate(self):
+        self.compile()
+        return self.model.evaluate_generator(self.test_generator)
 
     @property
     @memoize
     def train_generator(self):
-        return self.data.train_generator(Generator,
-                                         self.shape,
+        return self.data.train_generator(Generator, self.shape,
                                          max_batches=self.max_batches)
 
     @property
     @memoize
     def val_generator(self):
-        return self.data.val_generator(Generator,
-                                       self.shape,
+        return self.data.val_generator(Generator, self.shape,
                                        max_batches=self.max_batches)
+
+    @property
+    @memoize
+    def test_generator(self):
+        return self.data.test_generator(Generator, self.shape)
+
 
     @curry
     def conv_block(self, filters, kernel_size, last_layer):

@@ -8,8 +8,7 @@ from abfs.data import Data
 from abfs.constants import *
 from abfs.group_data_split import DataSplitConfig
 
-
-def train(args):
+def model(args):
     # Use Rio 3band data
     config = DataConfig(DEFAULT_DATA_DIR, BAND3, RIO_REGION)
 
@@ -23,11 +22,14 @@ def train(args):
     data.data_filter = lambda df: df.sq_ft > 0
 
     # Create model
-    unet = UNet(data, (args.size, args.size),
+    return UNet(data, (args.size, args.size),
                 max_batches=args.max_batches,
                 epochs=args.epochs,
                 gpu_count=args.gpu_count,
                 learning_rate=args.learning_rate)
+
+def train(args):
+    unet = model(args)
 
     # Print summary
     unet.model.summary()
@@ -35,11 +37,22 @@ def train(args):
     # Begin training
     unet.train()
 
-def export(args):
-    unet = UNet(None, (args.size, args.size))
 
-    # TODO: Check whether model needs to be compiled BEFORE export
-    # unet.compile()
+def evaluate(args):
+    print('Evaluating...')
+    unet = model(args)
+
+    unet.compile()
+
+    print(f'Loading weights from "{args.weights_path}"')
+    unet.model.load_weights(args.weights_path, by_name=False)
+
+    result = unet.evaluate()
+    print(f'Results: \n{list(zip(unet.model.metrics_names, result))}')
+
+
+def export(args):
+    unet = model(args)
 
     path = f'models/{args.output}.json'
     with open(path, 'w') as f:
@@ -58,8 +71,9 @@ def function_named(name):
 
 def main():
     parser = argparse.ArgumentParser()
-
     subparsers = parser.add_subparsers()
+
+    # Train command
     train_parser = subparsers.add_parser('train', help='Train a neural network')
     train_parser.add_argument('-lr', '--learning-rate', type=float, default=0.001)
     train_parser.add_argument('-s', '--size', type=int, default=512,
@@ -72,11 +86,29 @@ def main():
     train_parser.add_argument('-gpus', '--gpu-count', type=int, default=1)
     train_parser.set_defaults(func=train)
 
+    # Export command
     export_parser = subparsers.add_parser('export', help='Export keras model')
     export_parser.add_argument('-s', '--size', type=int, default=512,
                               help='Size of image')
     export_parser.add_argument('-o', '--output', type=str, default='model_output')
-    export_parser.set_defaults(func=export)
+    export_parser.set_defaults(
+        func=export, epochs=None, gpu_count=1, learning_rate=0,
+        max_batches=9999999, batch_size=0
+    )
+
+    # Evaluate command
+    evaluate_parser = subparsers.add_parser('evaluate',
+                                            help='Evaluate keras model based on test data')
+    evaluate_parser.add_argument('-w', '--weights-path', type=str, default=None,
+                                 help='Path to hdf5 model weights')
+    evaluate_parser.add_argument('-b', '--batch-size', type=int, default=4,
+                                 help='Number of examples per batch')
+    evaluate_parser.add_argument('-s', '--size', type=int, default=512,
+                                 help='Size of image')
+    evaluate_parser.set_defaults(
+        func=evaluate, epochs=None, gpu_count=1, learning_rate=0,
+        max_batches=9999999
+    )
 
     args = parser.parse_args()
     args.func(args)
