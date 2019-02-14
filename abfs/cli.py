@@ -55,5 +55,5 @@ def export(args):
     print(f'Save to "{path}"')
 
 def serve(args):
-    api_serve(args.address, args.port)
+    api_serve(args.address, args.port, args.model_path, args.weights_path)
 

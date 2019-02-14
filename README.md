@@ -4,7 +4,17 @@
 
 ### Outline
 
+* [Current Results](#current-results)
 * [Project Description](#project-description)
+
+## Current Results
+
+Model: `unet-f63fce`
+
+```
+Results:
+[('loss', 0.1882165691484708), ('mean_iou', 0.42608897993016964)]
+```
 
 ## Project Description
 
