@@ -36,12 +36,7 @@ class UNet():
         return abfs.keras.metrics.mean_iou(actual, pred)
 
     def compile(self):
-        model = self.model
-
-        if self.gpu_count > 1:
-            model = multi_gpu_model(model, gpus=self.gpu_count, cpu_merge=False)
-
-        model.compile(optimizer=SGD(lr=self.learning_rate),
+        self.model.compile(optimizer=SGD(lr=self.learning_rate),
                            loss='binary_crossentropy',
                            metrics=[self.mean_iou])
 
@@ -169,7 +164,13 @@ class UNet():
         )
 
         with tf.device("/cpu:0"):
-            return Model(inputs=inputs, outputs=output)
+            model = Model(inputs=inputs, outputs=output)
+
+        if self.gpu_count > 1:
+            model = multi_gpu_model(model, gpus=self.gpu_count, cpu_merge=False)
+
+        return model
+
 
     def _callbacks(self):
         model_format = 'unet-%s-{epoch:04d}-{val_loss:.2f}.hdf5' % self.uuid

@@ -24,11 +24,7 @@ def model(args):
 
 def train(args):
     unet = model(args)
-
-    # Print summary
     unet.model.summary()
-
-    # Begin training
     unet.train()
 
 
