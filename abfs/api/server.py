@@ -8,6 +8,7 @@ import json
 
 from abfs.api.keras_model import KerasModel
 from abfs.api.mask_prediction import MaskPrediction
+from abfs.api.polygon_prediction import PolygonPrediction
 
 WEIGHTS_PATH = None
 MODEL_PATH = None
@@ -21,9 +22,18 @@ def predict_mask(request):
         MAPBOX_API_KEY
     ).respond()
 
+@view_config(route_name='predict-polygon')
+def predict_polygon(request):
+    return PolygonPrediction(
+        request,
+        KerasModel(MODEL_PATH, WEIGHTS_PATH),
+        MAPBOX_API_KEY
+    ).respond()
+
 def main(global_config, **settings):
     config = Configurator(settings=settings)
     config.add_route('predict-mask', '/predict/mask', request_method='POST')
+    config.add_route('predict-polygon', '/predict/polygon', request_method='POST')
     config.scan('.')
     return config.make_wsgi_app()
 

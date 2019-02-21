@@ -1,6 +1,7 @@
 from pyramid.response import FileResponse
 from abfs.api.prediction.image import ImagePrediction
 from abfs.api.prediction.lat_long import LatLongPrediction
+from abfs.api.params import Params
 import json
 
 class MaskPrediction():
@@ -13,15 +14,12 @@ class MaskPrediction():
     def respond(self):
         prediction = None
         if 'coordinate' in self.json_body:
-            params = self.json_body['coordinate']
-            lat, lng = float(params['latitude']), float(params['longitude'])
-            zoom = int(self.json_body.get('zoom', '16'))
+            lat, lng, _, zoom = Params.coordinates(self.json_body)
             prediction = LatLongPrediction(self.keras_model, lat, lng, zoom,
                                            image_path_only=True,
                                            api_key=self.api_key)
         elif 'image_url' in self.json_body:
-            prediction = ImagePrediction(self.json_body['image_url'],
-                                        self.keras_model,
-                                        temp_file=True)
+            url = Params.image_url(self.json_body)
+            prediction = ImagePrediction(url, self.keras_model, temp_file=True)
 
         return FileResponse(prediction.run(), self.request)

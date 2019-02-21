@@ -1,7 +1,8 @@
 import cv2
 import mercantile
 from shapely.geometry import Polygon, MultiPolygon, mapping
-from toolz import curry
+from toolz import curry, pipe
+from toolz.curried import *
 import numpy as np
 
 from abfs.api.prediction.image import ImagePrediction
@@ -12,6 +13,7 @@ class LatLongPrediction():
     def __init__(self, keras_model, latitude, longitude, zoom=17,
                  tolerance=0.3, api_key=None, image_path_only=False):
         self.keras_model = keras_model
+        self.tolerance = tolerance
         self.tile = mercantile.tile(longitude, latitude, zoom)
         self.image_path_only = image_path_only
 
@@ -30,18 +32,18 @@ class LatLongPrediction():
 
     def _multi_polygon(self, prediction_image, tile):
         return pipe(
-            self._find_contours(prediction_image, tolerance),
+            self._find_contours(prediction_image),
             map(self._contour_to_lat_long(prediction_image.shape[0:2], tile)),
             filter(lambda p: p is not None),
             list,
             MultiPolygon
         )
 
-    def _find_contours(self, prediction_mask, tolerance):
-        _, threshold = cv2.threshold(predicted_mask, 1 - tolerance, 1,
+    def _find_contours(self, prediction_image):
+        _, threshold = cv2.threshold(prediction_image, 1 - self.tolerance, 1,
                                      cv2.THRESH_BINARY)
-        gray = cv2.cvtColor(np.array(threshold, np.uint8), cv2.COLOR_BGR2GRAY)
-        _, contours, _ = cv2.findContours(gray, cv2.RETR_EXTERNAL,
+        _, contours, _ = cv2.findContours(np.array(threshold, np.uint8),
+                                          cv2.RETR_EXTERNAL,
                                           cv2.CHAIN_APPROX_SIMPLE)
         return contours
 
@@ -55,7 +57,9 @@ class LatLongPrediction():
         height, width = image_shape
         width_scale = (xy_bounds.right - xy_bounds.left) / width
         height_scale = (xy_bounds.bottom - xy_bounds.top) / height
-        xy_points = contour[:, :] * (width_scale, height_scale) + (xy_bounds.left, xy_bounds.top)
+        xy_points = (contour[:, :] *
+                     (width_scale, height_scale) +
+                     (xy_bounds.left, xy_bounds.top))
 
         if xy_points.shape[0] < 3:
             return None
