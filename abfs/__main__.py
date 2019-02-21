@@ -55,6 +55,8 @@ def add_serve_command(subparsers):
                         help='Address to bind server to')
     parser.add_argument('-p', '--port', type=int, default=1337,
                         help='Port for server to listen on')
+    parser.add_argument('-mb', '--mapbox-api-key', type=str, default='',
+                        help='Mapbox API key')
     parser.set_defaults(func=serve)
     return subparsers
 

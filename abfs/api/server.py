@@ -11,12 +11,14 @@ from abfs.api.mask_prediction import MaskPrediction
 
 WEIGHTS_PATH = None
 MODEL_PATH = None
+MAPBOX_API_KEY = None
 
 @view_config(route_name='predict-mask')
 def predict_mask(request):
     return MaskPrediction(
         request,
-        KerasModel(MODEL_PATH, WEIGHTS_PATH)
+        KerasModel(MODEL_PATH, WEIGHTS_PATH),
+        MAPBOX_API_KEY
     ).respond()
 
 def main(global_config, **settings):
@@ -25,10 +27,11 @@ def main(global_config, **settings):
     config.scan('.')
     return config.make_wsgi_app()
 
-def serve(address='0.0.0.0', port=1337, model_path=None, weights_path=None):
-    global MODEL_PATH, WEIGHTS_PATH
+def serve(address='0.0.0.0', port=1337, model_path=None, weights_path=None, mapbox_api_key=None):
+    global MODEL_PATH, WEIGHTS_PATH, MAPBOX_API_KEY
     MODEL_PATH = model_path
     WEIGHTS_PATH = weights_path
+    MAPBOX_API_KEY = mapbox_api_key
 
     server = make_server(address, port, main(None))
     print(f'Serving on {address}:{port}')

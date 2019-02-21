@@ -51,5 +51,6 @@ def export(args):
     print(f'Save to "{path}"')
 
 def serve(args):
-    api_serve(args.address, args.port, args.model_path, args.weights_path)
+    api_serve(args.address, args.port, args.model_path,
+              args.weights_path, args.mapbox_api_key)
 
