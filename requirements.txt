@@ -12,7 +12,7 @@ decorator==4.3.2
 Fiona==1.8.4
 funcy==1.10.1
 gast==0.2.2
-GDAL==2.3.3
+GDAL>=2.2.1
 geopandas==0.4.0
 grpcio==1.18.0
 h5py==2.9.0
@@ -26,10 +26,11 @@ kiwisolver==1.0.1
 lenses==0.5.0
 Markdown==3.0.1
 matplotlib==3.0.2
+mercantile==1.0.4
 mock==2.0.0
 munch==2.3.2
 networkx==2.2
-numpy==1.15.4
+numpy>=1.15.4
 opencv-python==4.0.0.21
 pandas==0.24.1
 PasteDeploy==2.0.1
@@ -44,7 +45,7 @@ pyramid==1.10.2
 python-dateutil==2.8.0
 pytz==2018.9
 PyWavelets==1.0.1
-PyYAML==3.13
+PyYAML==4.2b1
 scikit-image==0.14.2
 scikit-learn==0.20.2
 scipy==1.2.1
@@ -52,8 +53,6 @@ Shapely==1.6.4.post1
 singledispatch==3.4.0.3
 six==1.12.0
 tensorboard==1.12.2
-tensorflow==1.13.0rc1
-tensorflow-estimator==1.13.0rc0
 termcolor==1.1.0
 toolz==0.9.0
 tornado==5.1.1

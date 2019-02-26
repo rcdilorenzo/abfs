@@ -10,23 +10,54 @@
 
 ## Installation
 
+For this project, we'll use python 3.6.8. Go ahead and install `pyenv` if you don't already have it.
+
+```
+# * Install pyenv: https://github.com/pyenv/pyenv-installer
+# * Add init commands to bash profile (bashrc, etc.)
+# * Source shell before continuing
+
+# Install proper version
+pyenv install 3.6.8
+```
+
 Within the project directory, go ahead and setup a new virtual environment.
 
 ```
-virtualenv venv
-source venv/bin/activate
+pyenv virtualenv 3.6.8 abfs-env
+pyenv activate abfs-env
 ```
 
-If you're on a Mac, you'll need to go ahead and install `gdal` through Homebrew before installing the remaining requirements.
+For `GDAL`, you'll need to install it separately through Homebrew/APT before installing the remaining requirements.
 
 ```
+# Numpy must be installed BEFORE gdal (https://gis.stackexchange.com/a/274328)
+pip install numpy
+
+# On macOS:
 brew install gdal
+
+# On Debian/Ubuntu:
+sudo apt-get install libgdal-dev
+pip install \
+  --global-option=build_ext \
+  --global-option="-I/usr/include/gdal" GDAL==`gdal-config --version`
 ```
 
 Now, go ahead and install the remaining dependencies.
 
 ```
 pip install -r requirements.txt
+```
+
+For this program, you'll also need to decide whether to use a GPU-based backend.
+
+```
+# With CUDA-based GPU:
+pip install tensorflow-gpu
+
+# Without GPU:
+pip install tensorflow
 ```
 
 With these packages now available, install the command line utility.
