@@ -11,3 +11,6 @@ dist/
 checkpoints/
 logs*/
 models/
+
+# Env
+venv/

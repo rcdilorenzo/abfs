@@ -4,16 +4,144 @@
 
 ### Outline
 
-* [Current Results](#current-results)
+* [Installation](#installation)
+* [Usage](#usage)
 * [Project Description](#project-description)
 
-## Current Results
+## Installation
 
-Model: `unet-f63fce`
+Within the project directory, go ahead and setup a new virtual environment.
 
 ```
+virtualenv venv
+source venv/bin/activate
+```
+
+If you're on a Mac, you'll need to go ahead and install `gdal` through Homebrew before installing the remaining requirements.
+
+```
+brew install gdal
+```
+
+Now, go ahead and install the remaining dependencies.
+
+```
+pip install -r requirements.txt
+```
+
+With these packages now available, install the command line utility.
+
+```
+python setup.py install
+```
+
+## Usage
+
+The entire program is operated from the command line utility. Here are some examples.
+
+```
+❯ abfs -h
+Using TensorFlow backend.
+usage: abfs [-h] {serve,train,export,evaluate} ...
+
+positional arguments:
+  {serve,train,export,evaluate}
+    serve               Serve model as API
+    train               Train a neural network
+    export              Export keras model
+    evaluate            Evaluate keras model based on test data
+
+optional arguments:
+  -h, --help            show this help message and exit
+```
+
+### Train
+
+```
+❯ abfs train -h
+Using TensorFlow backend.
+usage: abfs train [-h] [-lr LEARNING_RATE] [-s SIZE] [-e EPOCHS]
+                  [-b BATCH_SIZE] [-mb MAX_BATCHES] [-gpus GPU_COUNT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -lr LEARNING_RATE, --learning-rate LEARNING_RATE
+  -s SIZE, --size SIZE  Size of image
+  -e EPOCHS, --epochs EPOCHS
+  -b BATCH_SIZE, --batch-size BATCH_SIZE
+                        Number of examples per batch
+  -mb MAX_BATCHES, --max-batches MAX_BATCHES
+                        Maximum batches per epoch
+  -gpus GPU_COUNT, --gpu-count GPU_COUNT
+
+❯ abfs train -lr 0.02 --batch-size 8 --epochs 150 -gpus 2
+...
+```
+
+### Export
+
+```
+❯ abfs export -h
+Using TensorFlow backend.
+usage: abfs export [-h] [-s SIZE] [-o OUTPUT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -s SIZE, --size SIZE  Size of image
+  -o OUTPUT, --output OUTPUT
+
+❯ abfs export -s 512 -o architecture
+Using TensorFlow backend.
+Save to "models/architecture.json"
+```
+
+
+### Evaluate
+
+```
+❯ abfs evaluate -h
+Using TensorFlow backend.
+usage: abfs evaluate [-h] [-w WEIGHTS_PATH] [-b BATCH_SIZE] [-s SIZE]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -w WEIGHTS_PATH, --weights-path WEIGHTS_PATH
+                        Path to hdf5 model weights
+  -b BATCH_SIZE, --batch-size BATCH_SIZE
+                        Number of examples per batch
+  -s SIZE, --size SIZE  Size of image
+
+❯ abfs evaluate -w checkpoints/unet-d82jd2-0020-0.19.hdf5
+...
+Loading weights from "checkpoints/unet-d82jd2-0020-0.19.hdf5"
 Results:
-[('loss', 0.1882165691484708), ('mean_iou', 0.42608897993016964)]
+[('loss', 0.1882165691484708), ...
+```
+
+### Serve
+
+```
+❯ abfs serve -h
+Using TensorFlow backend.
+usage: abfs serve [-h] [-w WEIGHTS_PATH] [-m MODEL_PATH] [-a ADDRESS]
+                  [-p PORT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -w WEIGHTS_PATH, --weights-path WEIGHTS_PATH
+                        Path to hdf5 model weights
+  -m MODEL_PATH, --model-path MODEL_PATH
+                        Path to keras model JSON
+  -a ADDRESS, --address ADDRESS
+                        Address to bind server to
+  -p PORT, --port PORT  Port for server to listen on
+
+❯ abfs serve \
+    --weights-path checkpoints/unet-d82jd2-0020-0.19.hdf5 \
+    --model-path models/unet-d82jd2.json \
+    --mapbox-api-key <INSERT KEY HERE>
+Using TensorFlow backend.
+Serving on 0.0.0.0:1337
 ```
 
 ## Project Description
@@ -63,5 +191,5 @@ Using the typical approach, I’ll split the data into train, test, and validati
 ### Helpful Links
 
 * http://blog.qure.ai/notes/semantic-segmentation-deep-learning-review
-* https://sthalles.github.io/deep_segmentation_network 
+* https://sthalles.github.io/deep_segmentation_network
 * https://github.com/mrgloom/awesome-semantic-segmentation
