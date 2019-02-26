@@ -66,6 +66,18 @@ With these packages now available, install the command line utility.
 python setup.py install
 ```
 
+Verify it is installed properly by running the CLI.
+
+```
+abfs
+```
+
+If this returns an error about the command not being found, you may have to prepend the current python binary.
+
+```
+python -m abfs <COMMAND> <OPTIONS>
+```
+
 ## Usage
 
 The entire program is operated from the command line utility. Here are some examples.
