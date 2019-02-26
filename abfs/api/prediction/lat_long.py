@@ -18,7 +18,7 @@ class LatLongPrediction():
         self.image_path_only = image_path_only
 
         t = self.tile
-        self.url = f'{BASE_URL}/{t.z}/{t.x}/{t.y}.png?access_token={api_key}'
+        self.url = f'{BASE_URL}/{t.z}/{t.x}/{t.y}@2x.png?access_token={api_key}'
 
     def run(self):
         if self.image_path_only:
@@ -42,9 +42,9 @@ class LatLongPrediction():
     def _find_contours(self, prediction_image):
         _, threshold = cv2.threshold(prediction_image, 1 - self.tolerance, 1,
                                      cv2.THRESH_BINARY)
-        _, contours, _ = cv2.findContours(np.array(threshold, np.uint8),
-                                          cv2.RETR_EXTERNAL,
-                                          cv2.CHAIN_APPROX_SIMPLE)
+        contours, _ = cv2.findContours(np.array(threshold, np.uint8),
+                                       cv2.RETR_EXTERNAL,
+                                       cv2.CHAIN_APPROX_SIMPLE)
         return contours
 
     @curry
