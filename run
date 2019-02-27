@@ -1,0 +1,9 @@
+#!/bin/bash
+set -e
+pip install tensorflow
+python setup.py install
+python -m abfs serve \
+  --weights-s3 $WEIGHTS_S3 \
+  --model-s3 $MODEL_S3 \
+  --port ${PORT:-1337} \
+  --mapbox-api-key $MAPBOX_API_KEY

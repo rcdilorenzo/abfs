@@ -1,6 +1,7 @@
 absl-py==0.7.0
 astor==0.7.1
 attrs==18.2.0
+boto3==1.9.102
 certifi==2018.11.29
 Click==7.0
 click-plugins==1.0.4

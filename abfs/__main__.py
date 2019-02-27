@@ -49,8 +49,14 @@ def add_serve_command(subparsers):
     parser = subparsers.add_parser('serve', help='Serve model as API')
     parser.add_argument('-w', '--weights-path', type=str,
                         help='Path to hdf5 model weights')
+    parser.add_argument('-ws3', '--weights-s3', type=str,
+                        help='S3 path to hdf5 model weights')
+
     parser.add_argument('-m', '--model-path', type=str,
                         help='Path to keras model JSON')
+    parser.add_argument('-ms3', '--model-s3', type=str,
+                        help='S3 path to keras model JSON')
+
     parser.add_argument('-a', '--address', type=str, default='0.0.0.0',
                         help='Address to bind server to')
     parser.add_argument('-p', '--port', type=int, default=1337,

@@ -1,3 +1,4 @@
+
 from abfs.keras.u_net import UNet
 from abfs.data import Data
 from abfs.constants import *
@@ -51,6 +52,20 @@ def export(args):
     print(f'Save to "{path}"')
 
 def serve(args):
-    api_serve(args.address, args.port, args.model_path,
-              args.weights_path, args.mapbox_api_key)
+    api_serve(args.address, args.port,
+              args.model_path or _download_s3_object(args.model_s3),
+              args.weights_path or _download_s3_object(args.weights_s3),
+              args.mapbox_api_key)
+
+def _download_s3_object(s3_url):
+    import boto3
+    import tempfile
+
+    if s3_url is None: return None
+    bucket, key = s3_url.split('/',2)[-1].split('/',1)
+    file_path = tempfile.NamedTemporaryFile('w+b', delete=False)
+    print(f'Downloading {key}...')
+    boto3.resource('s3').Bucket(bucket).download_file(key, file_path.name)
+    print(f'Downloaded {key}.')
+    return file_path.name
 
