@@ -17,8 +17,8 @@ def config():
     return DataConfig(TOP_LEVEL_DATA_DIR, BAND3, RIO_REGION)
 
 @pytest.fixture
-def data():
-    return Data(config())
+def data(config):
+    return Data(config)
 
 @pytest.fixture
 def sample_df():
