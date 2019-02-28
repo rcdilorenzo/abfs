@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-pip install tensorflow
 python setup.py install
 python -m abfs serve \
   --weights-s3 $WEIGHTS_S3 \
