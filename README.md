@@ -2,6 +2,8 @@
 
 ![Example Truth Mask](https://user-images.githubusercontent.com/634167/51509050-d45ae400-1dc5-11e9-9dbc-04c64eed4e96.jpg)
 
+*Current results:* 0.691589 F1 Score, 0.188217 Loss (Binary Cross-Entropy)
+
 ### Outline
 
 * [Installation](#installation)

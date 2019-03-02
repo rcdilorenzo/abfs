@@ -32,13 +32,10 @@ class UNet():
         self.epochs = epochs
         self.learning_rate = learning_rate
 
-    def mean_iou(self, actual, pred):
-        return abfs.keras.metrics.mean_iou(actual, pred)
-
     def compile(self):
         self.model.compile(optimizer=SGD(lr=self.learning_rate),
                            loss='binary_crossentropy',
-                           metrics=[self.mean_iou])
+                           metrics=[abfs.keras.metrics.fbeta_score])
 
 
     def train(self):
