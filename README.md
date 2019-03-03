@@ -4,14 +4,11 @@
 
 *Current results:* 0.691589 F1 Score, 0.188217 Loss (Binary Cross-Entropy)
 
-### Outline
-
-* [Installation](#installation)
-* [Usage](#usage)
-* [Project Description](#project-description)
-
 ## Installation
 
+<details>
+  <summary>Installation Instructions</summary>
+  
 For this project, we'll use python 3.6.8. Go ahead and install `pyenv` if you don't already have it.
 
 ```
@@ -79,6 +76,8 @@ If this returns an error about the command not being found, you may have to prep
 ```
 python -m abfs <COMMAND> <OPTIONS>
 ```
+</details>
+
 
 ## Usage
 
@@ -99,8 +98,10 @@ positional arguments:
 optional arguments:
   -h, --help            show this help message and exit
 ```
+</details>
 
-### Train
+<details>
+  <summary>Train</summary>
 
 ```
 ❯ abfs train -h
@@ -122,8 +123,10 @@ optional arguments:
 ❯ abfs train -lr 0.02 --batch-size 8 --epochs 150 -gpus 2
 ...
 ```
+</details>
 
-### Export
+<details>
+  <summary>Export</summary>
 
 ```
 ❯ abfs export -h
@@ -139,9 +142,10 @@ optional arguments:
 Using TensorFlow backend.
 Save to "models/architecture.json"
 ```
+</details>
 
-
-### Evaluate
+<details>
+  <summary>Evaluate</summary>
 
 ```
 ❯ abfs evaluate -h
@@ -162,8 +166,10 @@ Loading weights from "checkpoints/unet-d82jd2-0020-0.19.hdf5"
 Results:
 [('loss', 0.1882165691484708), ...
 ```
+</details>
 
-### Serve
+<details>
+  <summary>Serve</summary>
 
 ```
 ❯ abfs serve -h
@@ -188,6 +194,7 @@ optional arguments:
 Using TensorFlow backend.
 Serving on 0.0.0.0:1337
 ```
+</details>
 
 ## Project Description
 
