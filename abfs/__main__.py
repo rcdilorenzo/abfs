@@ -47,6 +47,25 @@ def add_evaluate_command(subparsers):
     )
     return subparsers
 
+
+def add_tune_command(subparsers):
+    parser = subparsers.add_parser(
+        'tune',
+        help='Tune the tolerance parameter on the validation set'
+    )
+    parser.add_argument('-w', '--weights-path', type=str,
+                        help='Path to hdf5 model weights')
+    parser.add_argument('-e', '--max-examples', type=int, default=999998,
+                        help='Max number of examples to validate against')
+    parser.add_argument('-s', '--size', type=int, default=512,
+                        help='Size of image')
+    parser.add_argument('-gpus', '--gpu-count', type=int, default=1)
+    parser.set_defaults(
+        func=tune, epochs=None, learning_rate=0,
+        max_batches=9999999
+    )
+    return subparsers
+
 def add_serve_command(subparsers):
     parser = subparsers.add_parser('serve', help='Serve model as API')
     parser.add_argument('-w', '--weights-path', type=str,
@@ -78,6 +97,7 @@ def main():
         parser.add_subparsers(),
         add_serve_command,
         add_train_command,
+        add_tune_command,
         add_export_command,
         add_evaluate_command
     )

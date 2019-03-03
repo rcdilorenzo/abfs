@@ -83,20 +83,19 @@ The entire program is operated from the command line utility. Here are some exam
 
 ```
 ❯ abfs -h
-Using TensorFlow backend.
-usage: abfs [-h] {serve,train,export,evaluate} ...
+usage: abfs [-h] {serve,train,tune,export,evaluate} ...
 
 positional arguments:
-  {serve,train,export,evaluate}
+  {serve,train,tune,export,evaluate}
     serve               Serve model as API
     train               Train a neural network
+    tune                Tune the tolerance parameter on the validation set
     export              Export keras model
     evaluate            Evaluate keras model based on test data
 
 optional arguments:
   -h, --help            show this help message and exit
 ```
-</details>
 
 <details>
   <summary>Train</summary>
@@ -123,6 +122,36 @@ optional arguments:
 ```
 </details>
 
+
+<details>
+  <summary>Tune (Includes Graph Output)</summary>
+
+```
+❯ abfs tune -h
+usage: abfs tune [-h] [-w WEIGHTS_PATH] [-e MAX_EXAMPLES] [-s SIZE]
+                 [-gpus GPU_COUNT]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -w WEIGHTS_PATH, --weights-path WEIGHTS_PATH
+                        Path to hdf5 model weights
+  -e MAX_EXAMPLES, --max-examples MAX_EXAMPLES
+                        Max number of examples to validate against
+  -s SIZE, --size SIZE  Size of image
+  -gpus GPU_COUNT, --gpu-count GPU_COUNT
+
+❯ abfs tune -w checkpoints/<INSERT WEIGHTS HERE>.hdf5 -gpus 2
+Tuning of the tolerance parameter will occur on 431 images.
+Loading weights from checkpoints/<INSERT WEIGHTS HERE>.hdf5
+Calculating F1-Scores... This may take perhaps even an hour if no GPU.
+F1-Score calculation complete: 7.31 seconds
+Plot has been saved to /tmp/tmpsyo8l1vi.png. Please open to view.
+Tuned tolerance: 0.70 w/ median=0.6974 stdev=0.1722
+```
+
+![F1-Score Tuning Results](https://user-images.githubusercontent.com/634167/53690640-83cb9480-3d3c-11e9-99e6-e0efd910e22f.png)
+</details>
+  
 <details>
   <summary>Export</summary>
 

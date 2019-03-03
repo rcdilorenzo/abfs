@@ -1,4 +1,3 @@
-
 from abfs.keras.u_net import UNet
 from abfs.data import Data
 from abfs.constants import *
@@ -9,9 +8,11 @@ def model(args):
     # Use Rio 3band data
     config = DataConfig(DEFAULT_DATA_DIR, BAND3, RIO_REGION)
 
-    # Train (60%), Val (10%), Test (20%), Fixed seed
+    # Train (70%), Val (10%), Test (20%), Fixed seed
     split_config = DataSplitConfig(0.1, 0.2, 1337) # Create data with batch size
-    data = Data(config, split_config, batch_size=args.batch_size, augment=True)
+    data = Data(config, split_config,
+                batch_size=args.max_examples if hasattr(args, 'max_examples') else args.batch_size,
+                augment=True)
 
     # Exclude empty polygons
     data.data_filter = lambda df: df.sq_ft > 0
@@ -29,6 +30,10 @@ def train(args):
     unet.model.summary()
     unet.compile()
     unet.train()
+
+def tune(args):
+    unet = model(args)
+    unet.tune_tolerance()
 
 
 def evaluate(args):

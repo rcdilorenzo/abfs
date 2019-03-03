@@ -1,3 +1,4 @@
+from toolz import curry
 import tensorflow as tf
 import keras.backend as K
 
@@ -7,6 +8,26 @@ def mean_iou(y_true, y_pred):
    with tf.control_dependencies([up_opt]):
        score = tf.identity(score)
    return score
+
+def threshold_tf(prediction, tolerance):
+    return tf.cast(prediction > (1 - tolerance), tf.float32)
+
+@curry
+def f1_score_tf(tolerance, truth_mask_and_prediction):
+    truth_mask = truth_mask_and_prediction[0]
+    prediction_mask = threshold_tf(tolerance, truth_mask_and_prediction[1])
+
+    return fbeta_score(
+        tf.squeeze(tf.cast(truth_mask, tf.float32)),
+        tf.squeeze(prediction_mask)
+    )
+
+@curry
+def f1_scores_tf(truth_masks_and_predictions, tolerance):
+    return tf.map_fn(f1_score_tf(tolerance), truth_masks_and_predictions)
+
+def f1_scores_per_tolerances_tf(tolerances, truth_masks_and_predictions):
+    return tf.map_fn(f1_scores_tf(truth_masks_and_predictions), tolerances)
 
 # Source (Keras): https://git.io/fhAVp
 
