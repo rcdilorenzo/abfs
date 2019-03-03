@@ -22,6 +22,7 @@ class UNet():
                  max_batches=math.inf,
                  gpu_count=1,
                  epochs=100,
+                 weights_path=None,
                  learning_rate=0.001):
 
         self.uuid = uuid.uuid4().hex[0:6]
@@ -30,6 +31,7 @@ class UNet():
         self.gpu_count = gpu_count
         self.max_batches = max_batches
         self.epochs = epochs
+        self.weights_path = weights_path
         self.learning_rate = learning_rate
 
     def compile(self):
@@ -162,6 +164,10 @@ class UNet():
 
         with tf.device("/cpu:0"):
             model = Model(inputs=inputs, outputs=output)
+
+        if self.weights_path:
+            print(f'Loading weights from {self.weights_path}')
+            model.load_weights(self.weights_path)
 
         if self.gpu_count > 1:
             model = multi_gpu_model(model, gpus=self.gpu_count, cpu_merge=False)

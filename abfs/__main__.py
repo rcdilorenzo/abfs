@@ -15,6 +15,8 @@ def add_train_command(subparsers):
                         help='Number of examples per batch')
     parser.add_argument('-mb', '--max-batches', type=int, default=999999,
                         help='Maximum batches per epoch')
+    parser.add_argument('-wp', '--weights-path', type=str, default=None,
+                        help='Path to existing weights path')
     parser.add_argument('-gpus', '--gpu-count', type=int, default=1)
     parser.set_defaults(func=train)
     return subparsers

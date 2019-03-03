@@ -20,23 +20,20 @@ def model(args):
     return UNet(data, (args.size, args.size),
                 max_batches=args.max_batches,
                 epochs=args.epochs,
+                weights_path=args.weights_path,
                 gpu_count=args.gpu_count,
                 learning_rate=args.learning_rate)
 
 def train(args):
     unet = model(args)
     unet.model.summary()
+    unet.compile()
     unet.train()
 
 
 def evaluate(args):
     print('Evaluating...')
     unet = model(args)
-
-    unet.compile()
-
-    print(f'Loading weights from "{args.weights_path}"')
-    unet.model.load_weights(args.weights_path, by_name=False)
 
     result = unet.evaluate()
     print(f'Results: \n{list(zip(unet.model.metrics_names, result))}')
@@ -51,11 +48,13 @@ def export(args):
 
     print(f'Save to "{path}"')
 
+
 def serve(args):
     api_serve(args.address, args.port,
               args.model_path or _download_s3_object(args.model_s3),
               args.weights_path or _download_s3_object(args.weights_s3),
               args.mapbox_api_key)
+
 
 def _download_s3_object(s3_url):
     import boto3
