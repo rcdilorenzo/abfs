@@ -6,6 +6,6 @@ python -m abfs serve \
   --weights-path "$WEIGHTS_PATH" \
   --model-s3 "$MODEL_S3" \
   --model-path "$MODEL_PATH" \
-  --tolerance "${TOLERANCE:0.5}" \
+  --tolerance "$TOLERANCE" \
   --port ${PORT:-1337} \
   --mapbox-api-key "$MAPBOX_API_KEY"
