@@ -9,7 +9,7 @@ class Params():
     coordinates = juxt([
         coordinate['latitude'].get(),
         coordinate['longitude'].get(),
-        compose(constrain(0, 1), lens.Get('tolerance', 0.5).get()),
+        compose(constrain(0, 1), float, lens.Get('tolerance', '0.5').get()),
         compose(constrain(10, 19), int, lens.Get('zoom', 16).get())
     ])
 

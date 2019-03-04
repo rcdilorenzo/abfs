@@ -56,6 +56,7 @@ def add_tune_command(subparsers):
     parser.add_argument('-w', '--weights-path', type=str,
                         help='Path to hdf5 model weights')
     parser.add_argument('-e', '--max-examples', type=int, default=999998,
+
                         help='Max number of examples to validate against')
     parser.add_argument('-s', '--size', type=int, default=512,
                         help='Size of image')
@@ -65,6 +66,7 @@ def add_tune_command(subparsers):
         max_batches=9999999
     )
     return subparsers
+
 
 def add_serve_command(subparsers):
     parser = subparsers.add_parser('serve', help='Serve model as API')
@@ -84,6 +86,8 @@ def add_serve_command(subparsers):
                         help='Port for server to listen on')
     parser.add_argument('-mb', '--mapbox-api-key', type=str, default='',
                         help='Mapbox API key')
+    parser.add_argument('-t', '--tolerance', type=str, default='0.5',
+                        help='Default tolerance parameter (output from tune)')
     parser.set_defaults(func=serve)
     return subparsers
 

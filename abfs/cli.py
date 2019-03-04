@@ -58,7 +58,8 @@ def serve(args):
     api_serve(args.address, args.port,
               args.model_path or _download_s3_object(args.model_s3),
               args.weights_path or _download_s3_object(args.weights_s3),
-              args.mapbox_api_key)
+              args.mapbox_api_key,
+              args.tolerance)
 
 
 def _download_s3_object(s3_url):
