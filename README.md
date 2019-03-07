@@ -1,6 +1,6 @@
 # ABFS - Automatic Building Footprint Segmentation
 
-![ABFS hero banner](https://user-images.githubusercontent.com/634167/53690528-3ea66300-3d3a-11e9-86b0-314b6ca1cf21.jpg)
+![ABFS hero banner](https://user-images.githubusercontent.com/634167/53965119-92100c80-40be-11e9-9568-e509db7b4870.jpg)
 
 ## Installation
 
