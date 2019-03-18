@@ -1,6 +1,6 @@
 # ABFS - Automatic Building Footprint Segmentation
 
-Videos: [Project Overview (Pending)](#), [Liquid Cooling Upgrade](https://www.youtube.com/watch?v=Qdmf7I5BPtk)
+Videos: [Project Overview](https://www.youtube.com/watch?v=weYqdY7JY_g), [Liquid Cooling Upgrade](https://www.youtube.com/watch?v=Qdmf7I5BPtk)
 
 Article: [Data Science from Concept to Production: A Case Study of ABFS](https://rcd.ai/abfs-project)
 
